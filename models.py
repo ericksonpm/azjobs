@@ -1,5 +1,6 @@
 from app import db
 from datetime import datetime
+import pytz
 from sqlalchemy import Column, Integer, String, DateTime, Text, Float
 
 class Job(db.Model):
@@ -29,8 +30,8 @@ class Job(db.Model):
     requirements = Column(Text)
     
     # Metadata
-    scraped_at = Column(DateTime, default=datetime.utcnow, index=True)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    scraped_at = Column(DateTime, default=lambda: datetime.now(pytz.timezone('America/Phoenix')), index=True)
+    updated_at = Column(DateTime, default=lambda: datetime.now(pytz.timezone('America/Phoenix')), onupdate=lambda: datetime.now(pytz.timezone('America/Phoenix')))
     
     def __repr__(self):
         return f'<Job {self.requisition_id}: {self.title}>'

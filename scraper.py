@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import re
 import time
 import logging
+import pytz
 from datetime import datetime, timedelta
 from urllib.parse import urljoin, urlparse
 from app import app, db
@@ -127,14 +128,20 @@ class AZStateJobsScraper:
         """Extract salary information from job page"""
         text = soup.get_text()
         
-        # Primary pattern for salary ranges with or without dollar signs
-        patterns = [
+        # Look for salary in Posting Details section specifically
+        # Pattern 1: Single salary amount "Salary: $40,207.02"
+        single_salary_match = re.search(r'Salary:\s*\$?([\d,]+(?:\.\d{2})?)\s*(?:\n|$)', text, re.IGNORECASE)
+        if single_salary_match:
+            salary_val = single_salary_match.group(1).replace(',', '')
+            return f"${salary_val}"
+        
+        # Pattern 2: Salary range "Salary: $40,207.02 - $45,000"
+        range_patterns = [
             r'Salary:\s*\$?([\d,]+(?:\.\d{2})?)\s*-\s*\$?([\d,]+(?:\.\d{2})?)',
             r'(\$[\d,]+(?:\.\d{2})?)\s*-\s*(\$[\d,]+(?:\.\d{2})?)',
-            r'Grade:\s*\d+.*?(\$[\d,]+(?:\.\d{2})?)\s*-\s*(\$[\d,]+(?:\.\d{2})?)'
         ]
         
-        for pattern in patterns:
+        for pattern in range_patterns:
             match = re.search(pattern, text, re.IGNORECASE)
             if match:
                 if len(match.groups()) == 2:
@@ -142,17 +149,17 @@ class AZStateJobsScraper:
                     max_sal = match.group(2).replace('$', '').replace(',', '')
                     return f"${min_sal} - ${max_sal}"
         
-        # Look for "Salary:" followed by salary range in the next few lines
-        salary_lines = text.split('\n')
-        for i, line in enumerate(salary_lines):
-            if 'Salary:' in line and i + 1 < len(salary_lines):
-                # Check current line and next line for salary range
-                combined_text = line + ' ' + salary_lines[i + 1]
-                match = re.search(r'(\$?[\d,]+(?:\.\d{2})?)\s*-\s*(\$?[\d,]+(?:\.\d{2})?)', combined_text)
-                if match:
-                    min_sal = match.group(1).replace('$', '').replace(',', '')
-                    max_sal = match.group(2).replace('$', '').replace(',', '')
-                    return f"${min_sal} - ${max_sal}"
+        # Pattern 3: Look for salary after "Posting Details:" heading
+        posting_details_idx = text.find('Posting Details:')
+        if posting_details_idx != -1:
+            # Get text after "Posting Details:" up to next major section
+            details_section = text[posting_details_idx:posting_details_idx + 500]
+            
+            # Look for salary in this section
+            salary_match = re.search(r'Salary:\s*\$?([\d,]+(?:\.\d{2})?)', details_section, re.IGNORECASE)
+            if salary_match:
+                salary_val = salary_match.group(1).replace(',', '')
+                return f"${salary_val}"
         
         return None
     
@@ -259,7 +266,8 @@ def scrape_jobs():
                     
                     if existing_job:
                         # Update existing job
-                        existing_job.updated_at = datetime.utcnow()
+                        phoenix_tz = pytz.timezone('America/Phoenix')
+                        existing_job.updated_at = datetime.now(phoenix_tz)
                         logger.debug(f"Updated existing job: {job_data['requisition_id']}")
                     else:
                         # Get detailed information from individual job page

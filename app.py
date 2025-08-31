@@ -1,5 +1,6 @@
 import os
 import logging
+import pytz
 from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
@@ -133,7 +134,7 @@ def api_jobs():
                 'employment_type': job.employment_type or '',
                 'salary': salary_display,
                 'closing_date': job.closing_date.strftime('%b %d, %Y') if job.closing_date else '',
-                'scraped_at': job.scraped_at.strftime('%b %d, %Y %I:%M %p')
+                'scraped_at': job.scraped_at.astimezone(pytz.timezone('America/Phoenix')).strftime('%b %d, %Y %I:%M %p MST') if job.scraped_at else ''
             })
         
         return jsonify({
