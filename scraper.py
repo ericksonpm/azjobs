@@ -17,7 +17,12 @@ class AZStateJobsScraper:
         self.search_url = "https://www.azstatejobs.gov/jobs/search"
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Accept-Encoding': 'gzip, deflate',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1'
         })
         
     def get_job_listings(self):
@@ -25,14 +30,42 @@ class AZStateJobsScraper:
         try:
             logger.info("Fetching job listings from main search page...")
             response = self.session.get(self.search_url, timeout=30)
+            
+            # Log response details for debugging
+            logger.info(f"Response status: {response.status_code}")
+            logger.info(f"Response content length: {len(response.content)}")
+            logger.info(f"Response headers: {dict(response.headers)}")
+            
+            # Check if we got an empty response
+            if len(response.content) == 0:
+                logger.error("Received empty response from server - possible rate limiting or anti-bot measures")
+                return []
+            
+            # Check for non-200 status codes
+            if response.status_code == 202:
+                logger.warning("Received 202 status code - request accepted but processing not complete")
+                # Wait a bit and try once more
+                import time
+                time.sleep(5)
+                logger.info("Retrying request after 5 second delay...")
+                response = self.session.get(self.search_url, timeout=30)
+                logger.info(f"Retry response status: {response.status_code}, content length: {len(response.content)}")
+            
             response.raise_for_status()
             
             soup = BeautifulSoup(response.content, 'html.parser')
+            
+            # Log some page content for debugging
+            page_text = soup.get_text()[:500]  # First 500 chars
+            logger.info(f"Page content preview: {page_text}")
             
             # Find the jobs table
             jobs_table = soup.find('table')
             if not jobs_table:
                 logger.error("Could not find jobs table on the page")
+                # Log all tables found for debugging
+                all_tables = soup.find_all('table')
+                logger.info(f"Found {len(all_tables)} tables on the page")
                 return []
             
             jobs = []
