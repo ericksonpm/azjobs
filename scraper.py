@@ -17,39 +17,68 @@ class AZStateJobsScraper:
         self.search_url = "https://www.azstatejobs.gov/jobs/search"
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
-            'Accept-Encoding': 'gzip, deflate',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Cache-Control': 'max-age=0',
+            'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+            'Sec-Ch-Ua-Mobile': '?0',
+            'Sec-Ch-Ua-Platform': '"Windows"',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Sec-Fetch-User': '?1',
+            'Upgrade-Insecure-Requests': '1',
+            'Connection': 'keep-alive'
         })
         
     def get_job_listings(self):
         """Scrape the main job search page to get job listings"""
         try:
+            # First, visit the homepage to establish a session
+            logger.info("Establishing session by visiting homepage...")
+            homepage_response = self.session.get(self.base_url, timeout=30)
+            logger.info(f"Homepage response status: {homepage_response.status_code}")
+            
+            # Wait a bit to seem more human-like
+            time.sleep(2)
+            
+            # Now try the search page
             logger.info("Fetching job listings from main search page...")
             response = self.session.get(self.search_url, timeout=30)
             
             # Log response details for debugging
             logger.info(f"Response status: {response.status_code}")
             logger.info(f"Response content length: {len(response.content)}")
-            logger.info(f"Response headers: {dict(response.headers)}")
+            
+            # Check if we got a bot challenge
+            if b"JavaScript is disabled" in response.content or b"verify that you're not a robot" in response.content:
+                logger.warning("Detected bot challenge page - trying alternative approach")
+                
+                # Try different URL variations
+                alternative_urls = [
+                    "https://www.azstatejobs.gov/jobs/search?query=",
+                    "https://www.azstatejobs.gov/jobs",
+                    "https://www.azstatejobs.gov/jobs/search?page=1"
+                ]
+                
+                for alt_url in alternative_urls:
+                    logger.info(f"Trying alternative URL: {alt_url}")
+                    time.sleep(3)  # Wait between attempts
+                    response = self.session.get(alt_url, timeout=30)
+                    
+                    if b"JavaScript is disabled" not in response.content and response.status_code == 200:
+                        logger.info(f"Success with alternative URL: {alt_url}")
+                        break
+                else:
+                    logger.error("All alternative URLs failed - bot detection active")
+                    return []
             
             # Check if we got an empty response
             if len(response.content) == 0:
-                logger.error("Received empty response from server - possible rate limiting or anti-bot measures")
+                logger.error("Received empty response from server")
                 return []
-            
-            # Check for non-200 status codes
-            if response.status_code == 202:
-                logger.warning("Received 202 status code - request accepted but processing not complete")
-                # Wait a bit and try once more
-                import time
-                time.sleep(5)
-                logger.info("Retrying request after 5 second delay...")
-                response = self.session.get(self.search_url, timeout=30)
-                logger.info(f"Retry response status: {response.status_code}, content length: {len(response.content)}")
             
             response.raise_for_status()
             
