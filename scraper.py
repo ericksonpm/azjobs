@@ -249,6 +249,34 @@ class AZStateJobsScraper:
         
         return None
 
+def cleanup_old_jobs(current_requisition_ids):
+    """Remove jobs that are >25 days old or no longer on the official site"""
+    with app.app_context():
+        phoenix_tz = pytz.timezone('America/Phoenix')
+        cutoff_date = datetime.now(phoenix_tz) - timedelta(days=25)
+        
+        # Remove jobs older than 25 days
+        old_jobs = Job.query.filter(Job.scraped_at < cutoff_date).all()
+        old_count = len(old_jobs)
+        for job in old_jobs:
+            db.session.delete(job)
+        
+        # Remove jobs no longer on official site
+        all_our_jobs = Job.query.all()
+        removed_count = 0
+        for job in all_our_jobs:
+            if job.requisition_id not in current_requisition_ids:
+                db.session.delete(job)
+                removed_count += 1
+        
+        db.session.commit()
+        
+        total_removed = old_count + removed_count
+        if total_removed > 0:
+            logger.info(f"Cleanup: Removed {old_count} jobs >25 days old and {removed_count} jobs no longer on site")
+        
+        return total_removed
+
 def scrape_jobs():
     """Main function to scrape jobs and store in database"""
     with app.app_context():
@@ -258,6 +286,7 @@ def scrape_jobs():
         try:
             # Get job listings from main page
             job_listings = scraper.get_job_listings()
+            current_requisition_ids = {job['requisition_id'] for job in job_listings}
             
             for job_data in job_listings:
                 try:
@@ -310,6 +339,9 @@ def scrape_jobs():
             # Commit all changes
             db.session.commit()
             logger.info(f"Scraping completed. {jobs_scraped} new jobs added.")
+            
+            # Clean up old and removed jobs
+            cleanup_old_jobs(current_requisition_ids)
             
             return jobs_scraped
             
