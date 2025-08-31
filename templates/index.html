@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}Arizona State Jobs - Latest Openings{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Header Section -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h2 mb-1">
+                    <i data-feather="briefcase" class="me-2"></i>
+                    Arizona State Jobs
+                </h1>
+                <p class="text-muted mb-0">Latest job openings with salary information</p>
+            </div>
+            <div class="text-end">
+                <div class="badge bg-success fs-6 mb-1">
+                    <i data-feather="check-circle" class="me-1"></i>
+                    Auto-Updated
+                </div>
+                <div class="scrape-indicator text-muted">
+                    Next update: 6 AM, 10 AM, 2 PM, or 6 PM Phoenix time
+                </div>
+            </div>
+        </div>
+
+        <!-- Jobs Table -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="jobsTable" class="table table-hover table-striped" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Job Title</th>
+                                <th>Department</th>
+                                <th>Location</th>
+                                <th>Type</th>
+                                <th>Salary</th>
+                                <th>Closing Date</th>
+                                <th>Scraped</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data will be loaded via AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="row mt-4">
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">
+                            <i data-feather="briefcase" class="me-2"></i>
+                            <span id="total-jobs">{{ jobs|length }}</span>
+                        </h5>
+                        <p class="card-text text-muted">Total Jobs</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-success">
+                            <i data-feather="building" class="me-2"></i>
+                            {{ departments|length }}
+                        </h5>
+                        <p class="card-text text-muted">Departments</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-info">
+                            <i data-feather="map-pin" class="me-2"></i>
+                            {{ locations|length }}
+                        </h5>
+                        <p class="card-text text-muted">Locations</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-warning">
+                            <i data-feather="dollar-sign" class="me-2"></i>
+                            <span id="jobs-with-salary">0</span>
+                        </h5>
+                        <p class="card-text text-muted">With Salary Info</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Information -->
+        <div class="alert alert-info mt-4" role="alert">
+            <h6 class="alert-heading">
+                <i data-feather="info" class="me-2"></i>
+                How it works
+            </h6>
+            <p class="mb-0">
+                This application automatically scrapes the <a href="https://www.azstatejobs.gov/jobs/search" target="_blank" class="alert-link">Arizona State Jobs website</a> 
+                four times daily (6 AM, 10 AM, 2 PM, and 6 PM Phoenix time) to bring you the latest job postings with salary information. 
+                Click on any job title to view the full posting on the official website.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Initialize DataTable
+    const table = $('#jobsTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: '{{ url_for("api_jobs") }}',
+            type: 'GET'
+        },
+        columns: [
+            { 
+                data: 'title',
+                name: 'title',
+                className: 'job-title-column'
+            },
+            { 
+                data: 'department',
+                name: 'department',
+                render: function(data, type, row) {
+                    if (data && data.length > 30) {
+                        return '<span title="' + data + '">' + data.substring(0, 30) + '...</span>';
+                    }
+                    return data || '';
+                }
+            },
+            { 
+                data: 'location',
+                name: 'location',
+                render: function(data, type, row) {
+                    if (data && data.length > 20) {
+                        return '<span title="' + data + '">' + data.substring(0, 20) + '...</span>';
+                    }
+                    return data || '';
+                }
+            },
+            { 
+                data: 'employment_type',
+                name: 'employment_type',
+                render: function(data, type, row) {
+                    if (data) {
+                        let badgeClass = 'bg-secondary';
+                        if (data === 'Full-time') badgeClass = 'bg-success';
+                        else if (data === 'Part-time') badgeClass = 'bg-warning';
+                        else if (data === 'Temporary') badgeClass = 'bg-info';
+                        return '<span class="badge ' + badgeClass + '">' + data + '</span>';
+                    }
+                    return '';
+                }
+            },
+            { 
+                data: 'salary',
+                name: 'salary',
+                className: 'salary-column',
+                render: function(data, type, row) {
+                    return data || '<span class="text-muted">Not specified</span>';
+                }
+            },
+            { 
+                data: 'closing_date',
+                name: 'closing_date',
+                render: function(data, type, row) {
+                    if (data) {
+                        const date = new Date(data);
+                        const now = new Date();
+                        const diffTime = date - now;
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        
+                        let className = 'text-muted';
+                        if (diffDays <= 3) className = 'text-danger';
+                        else if (diffDays <= 7) className = 'text-warning';
+                        
+                        return '<span class="' + className + '">' + data + '</span>';
+                    }
+                    return '<span class="text-muted">No deadline</span>';
+                }
+            },
+            { 
+                data: 'scraped_at',
+                name: 'scraped_at',
+                className: 'text-muted small'
+            }
+        ],
+        order: [[6, 'desc']], // Sort by scraped_at (newest first)
+        pageLength: 25,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        responsive: true,
+        language: {
+            search: "Search jobs:",
+            searchPlaceholder: "Title, department, location...",
+            lengthMenu: "Show _MENU_ jobs per page",
+            info: "Showing _START_ to _END_ of _TOTAL_ jobs",
+            infoEmpty: "No jobs found",
+            infoFiltered: "(filtered from _MAX_ total jobs)",
+            zeroRecords: "No matching jobs found",
+            processing: '<div class="d-flex justify-content-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>'
+        },
+        drawCallback: function(settings) {
+            // Update statistics
+            const api = this.api();
+            const data = api.data();
+            
+            // Count jobs with salary information
+            let jobsWithSalary = 0;
+            data.each(function(row) {
+                if (row.salary && row.salary !== '<span class="text-muted">Not specified</span>') {
+                    jobsWithSalary++;
+                }
+            });
+            
+            $('#jobs-with-salary').text(jobsWithSalary);
+            $('#total-jobs').text(settings.json ? settings.json.recordsTotal : 0);
+            
+            // Re-initialize Feather icons
+            feather.replace();
+        }
+    });
+
+    // Custom search functionality
+    $('#customSearch').on('keyup', function() {
+        table.search(this.value).draw();
+    });
+
+    // Update footer statistics
+    function updateFooterStats() {
+        // This could be enhanced to show real-time stats
+        $('#total-jobs-count').text($('#total-jobs').text());
+        
+        // Set last update time to current time for demo
+        const now = new Date();
+        $('#last-update-time').text(now.toLocaleString());
+    }
+
+    // Initialize footer stats
+    setTimeout(updateFooterStats, 1000);
+});
+</script>
+{% endblock %}
