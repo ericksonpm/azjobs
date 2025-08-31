@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - DATABASE_URL=postgresql://azjobs_user:azjobs_pass@db:5432/azjobs_db
+      - SESSION_SECRET=your-secret-key-change-this
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - db
+    restart: unless-stopped
+    volumes:
+      - ./logs:/app/logs
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=azjobs_db
+      - POSTGRES_USER=azjobs_user
+      - POSTGRES_PASSWORD=azjobs_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:

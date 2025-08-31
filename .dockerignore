@@ -1,0 +1,35 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# Local development files
+.env
+.venv
+*.sqlite3
+node_modules/
+.DS_Store
+*.swp
+*.swo
+
+# Replit specific
+.replit
+replit.nix
+poetry.lock
+uv.lock
