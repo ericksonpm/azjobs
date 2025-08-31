@@ -18,8 +18,22 @@ COPY docker-requirements.txt requirements.txt
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Playwright browsers and system dependencies
-RUN playwright install --with-deps chromium
+# Install Playwright system dependencies first
+RUN apt-get update && apt-get install -y \
+    libnss3-dev \
+    libatk-bridge2.0-dev \
+    libdrm2 \
+    libxkbcommon0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxrandr2 \
+    libgbm1 \
+    libxss1 \
+    libasound2 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Playwright browsers
+RUN python -m playwright install chromium
 
 # Copy application code
 COPY . .
