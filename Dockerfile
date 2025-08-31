@@ -32,7 +32,8 @@ RUN apt-get update && apt-get install -y \
     libasound2 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Playwright browsers
+# Install Playwright and browsers
+RUN python -m playwright install
 RUN python -m playwright install chromium
 
 # Copy application code
