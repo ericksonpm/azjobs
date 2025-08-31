@@ -169,6 +169,17 @@ def manual_scrape_selenium():
         logger.error(f"Error in Selenium scrape: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/scrape-playwright')
+def manual_scrape_playwright():
+    """Manual trigger for Playwright scraping (best for bot detection)"""
+    try:
+        from playwright_scraper import scrape_jobs_playwright
+        jobs_scraped = scrape_jobs_playwright()
+        return jsonify({'success': True, 'jobs_scraped': jobs_scraped, 'method': 'playwright'})
+    except Exception as e:
+        logger.error(f"Error in Playwright scrape: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     # Start the scheduler
     from scheduler import start_scheduler
