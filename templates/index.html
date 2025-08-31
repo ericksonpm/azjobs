@@ -66,7 +66,7 @@
                 <div class="card text-center">
                     <div class="card-body">
                         <h5 class="card-title text-success">
-                            <i data-feather="building" class="me-2"></i>
+                            <i data-feather="briefcase" class="me-2"></i>
                             {{ departments|length }}
                         </h5>
                         <p class="card-text text-muted">Departments</p>
@@ -181,11 +181,11 @@ $(document).ready(function() {
                         const now = new Date();
                         const diffTime = date - now;
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        
+
                         let className = 'text-muted';
                         if (diffDays <= 3) className = 'text-danger';
                         else if (diffDays <= 7) className = 'text-warning';
-                        
+
                         return '<span class="' + className + '">' + data + '</span>';
                     }
                     return '<span class="text-muted">No deadline</span>';
@@ -215,7 +215,7 @@ $(document).ready(function() {
             // Update statistics
             const api = this.api();
             const data = api.data();
-            
+
             // Count jobs with salary information
             let jobsWithSalary = 0;
             data.each(function(row) {
@@ -223,10 +223,10 @@ $(document).ready(function() {
                     jobsWithSalary++;
                 }
             });
-            
+
             $('#jobs-with-salary').text(jobsWithSalary);
             $('#total-jobs').text(settings.json ? settings.json.recordsTotal : 0);
-            
+
             // Re-initialize Feather icons
             feather.replace();
         }
@@ -241,7 +241,7 @@ $(document).ready(function() {
     function updateFooterStats() {
         // This could be enhanced to show real-time stats
         $('#total-jobs-count').text($('#total-jobs').text());
-        
+
         // Set last update time to current time for demo
         const now = new Date();
         $('#last-update-time').text(now.toLocaleString());

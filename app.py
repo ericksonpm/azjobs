@@ -158,6 +158,17 @@ def manual_scrape():
         logger.error(f"Error in manual scrape: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/scrape-selenium')
+def manual_scrape_selenium():
+    """Manual trigger for Selenium scraping (for testing bot detection)"""
+    try:
+        from selenium_scraper import scrape_jobs_selenium
+        jobs_scraped = scrape_jobs_selenium()
+        return jsonify({'success': True, 'jobs_scraped': jobs_scraped, 'method': 'selenium'})
+    except Exception as e:
+        logger.error(f"Error in Selenium scrape: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     # Start the scheduler
     from scheduler import start_scheduler
