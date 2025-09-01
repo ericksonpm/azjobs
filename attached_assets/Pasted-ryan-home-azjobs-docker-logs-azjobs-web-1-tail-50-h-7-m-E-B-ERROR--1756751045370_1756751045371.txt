@@ -1,0 +1,65 @@
+ryan@home:~/azjobs$ docker logs azjobs-web-1 --tail=50
+ŀh+��ߓ�}7ܐ�m�~�E
+                ����B
+ERROR:scraper:Could not find jobs table on the page
+INFO:scraper:Found 0 tables on the page
+INFO:scraper:Scraping completed. 0 new jobs added.
+INFO:scheduler:Scheduled scraping completed. 0 new jobs added.
+INFO:apscheduler.executors.default:Job "Scrape jobs at 18:00 Phoenix time (trigger: cron[hour='18', minute='0'], next run at: 2025-09-01 18:00:00 MST)" executed successfully
+DEBUG:apscheduler.scheduler:Looking for jobs to run
+DEBUG:apscheduler.scheduler:Next wakeup is due at 2025-09-01 17:00:00+00:00 (in 14399.998641 seconds)
+INFO:apscheduler.executors.default:Running job "Scrape jobs at 6:00 Phoenix time (trigger: cron[hour='6', minute='0'], next run at: 2025-09-02 06:00:00 MST)" (scheduled at 2025-09-01 06:00:00-07:00)
+INFO:scheduler:Starting scheduled job scraping...
+INFO:scraper:Establishing session by visiting homepage...
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.azstatejobs.gov:443
+DEBUG:urllib3.connectionpool:https://www.azstatejobs.gov:443 "GET / HTTP/1.1" 200 None
+INFO:scraper:Homepage response status: 200
+INFO:scraper:Fetching job listings from main search page...
+DEBUG:urllib3.connectionpool:https://www.azstatejobs.gov:443 "GET /jobs/search HTTP/1.1" 200 None
+INFO:scraper:Response status: 200
+INFO:scraper:Response content length: 20579
+DEBUG:charset_normalizer:Encoding detection: Unable to determine any suitable charset.
+DEBUG:charset_normalizer:Encoding detection: Unable to determine any suitable charset.
+WARNING:bs4.dammit:Some characters could not be decoded, and were replaced with REPLACEMENT CHARACTER.
+INFO:scraper:Page content preview: U�13hU��#R�~�����:c����������븞��R��n`����=�zd��ii��I�S����J�M��,Ҷ���}O�=��̗c��3"��j�E�V�n�����?3#S�w8bs���0�0컖�_��J���D�U�$l�@�=������l/�rLW�[Ǉ��"U���LY�n]�v�4��mY��RgR�
+                                                              dv嗛���3���^�4��Y(�hKp��C�FҬt<3:�e����� #ʂ�b�q���JcF
+/t9r�$�0p��==v�Z<��3�J���a�皙}L�f�x�#�,1왢X��է����$K,���Z!󧫫V:�[�����{���y��x�0�
+                                                                               *@�@�(!�D�W�W���7#BE6�i�w�p�Ec�
+                                                                                                              S3]�/�=���c!@H�x�<��5�"�,�2���k�+�
+N�����%-�B1 ڊ1�����8L�d�q��i�fò��~�̀K\
+ERROR:scraper:Could not find jobs table on the page
+INFO:scraper:Found 0 tables on the page
+INFO:scraper:Scraping completed. 0 new jobs added.
+INFO:scheduler:Scheduled scraping completed. 0 new jobs added.
+INFO:apscheduler.executors.default:Job "Scrape jobs at 6:00 Phoenix time (trigger: cron[hour='6', minute='0'], next run at: 2025-09-02 06:00:00 MST)" executed successfully
+DEBUG:apscheduler.scheduler:Looking for jobs to run
+DEBUG:apscheduler.scheduler:Next wakeup is due at 2025-09-01 21:00:00+00:00 (in 14399.998765 seconds)
+INFO:apscheduler.executors.default:Running job "Scrape jobs at 10:00 Phoenix time (trigger: cron[hour='10', minute='0'], next run at: 2025-09-02 10:00:00 MST)" (scheduled at 2025-09-01 10:00:00-07:00)
+INFO:scheduler:Starting scheduled job scraping...
+INFO:scraper:Establishing session by visiting homepage...
+DEBUG:urllib3.connectionpool:Starting new HTTPS connection (1): www.azstatejobs.gov:443
+DEBUG:urllib3.connectionpool:https://www.azstatejobs.gov:443 "GET / HTTP/1.1" 200 None
+INFO:scraper:Homepage response status: 200
+INFO:scraper:Fetching job listings from main search page...
+DEBUG:urllib3.connectionpool:https://www.azstatejobs.gov:443 "GET /jobs/search HTTP/1.1" 200 None
+INFO:scraper:Response status: 200
+INFO:scraper:Response content length: 20838
+DEBUG:charset_normalizer:Encoding detection: Unable to determine any suitable charset.
+DEBUG:charset_normalizer:Encoding detection: Unable to determine any suitable charset.
+WARNING:bs4.dammit:Some characters could not be decoded, and were replaced with REPLACEMENT CHARACTER.
+INFO:scraper:Page content preview: UH�13hU��#R�~�����:c�����������u�����9�_�A��{��ȯ�O*E*;c6�=���X��Q��wU��J+������1#2�
+                                                                                                                      a@��,��mvq����}�|���H]79�-����I�Z`�����"���� #J"�f1�8�B�l����%ݐ��.�r�T��6E*]��5[�53����,��:s萂D`� �+����������YU�j
+                                    �9T(
+                                        ��wO�ݻ�>��^�z�
+                                                      -�a�r�̾?&�����x�s@YbX�����է��-�[�'j��N�T%��Oխz缦��=��~��?���D�T���Q
+                                                                                                                        �@�W=f^=�bF�PBG����}�-O���c�Yo����%� *�,c�������@��~�1������mS���D�i
+                                              g۫�WJ�+�#�ywjH��V8��O~$\
+ŀh+��Ǔ�}7ܐ�m�1�E
+                ˚��B����
+                        G
+ERROR:scraper:Could not find jobs table on the page
+INFO:scraper:Found 0 tables on the page
+INFO:scraper:Scraping completed. 0 new jobs added.
+INFO:scheduler:Scheduled scraping completed. 0 new jobs added.
+INFO:apscheduler.executors.default:Job "Scrape jobs at 10:00 Phoenix time (trigger: cron[hour='10', minute='0'], next run at: 2025-09-02 10:00:00 MST)" executed successfully
+ryan@home:~/azjobs$ 
